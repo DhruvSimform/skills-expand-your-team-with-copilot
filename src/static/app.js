@@ -304,6 +304,102 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.schedule;
   }
 
+  function getActivityShareId(activityName) {
+    return `activity-${activityName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")}`;
+  }
+
+  function getActivityShareData(name, details) {
+    const shareUrl = new URL(window.location.pathname, window.location.origin);
+    shareUrl.hash = getActivityShareId(name);
+
+    return {
+      title: `${name} at Mergington High School`,
+      text: `Check out ${name} at Mergington High School! ${details.description} Meets ${formatSchedule(
+        details
+      )}.`,
+      url: shareUrl.toString(),
+    };
+  }
+
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.setAttribute("readonly", "");
+    textArea.style.position = "absolute";
+    textArea.style.left = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textArea);
+  }
+
+  function createShareActions(name, details) {
+    const shareData = getActivityShareData(name, details);
+    const shareActions = document.createElement("div");
+    shareActions.className = "share-actions";
+
+    const shareLabel = document.createElement("p");
+    shareLabel.className = "share-label";
+    shareLabel.textContent = "Share with friends:";
+    shareActions.appendChild(shareLabel);
+
+    const shareButtonGroup = document.createElement("div");
+    shareButtonGroup.className = "share-button-group";
+
+    if (navigator.share) {
+      const nativeShareButton = document.createElement("button");
+      nativeShareButton.type = "button";
+      nativeShareButton.className = "share-action-button";
+      nativeShareButton.textContent = "Share";
+      nativeShareButton.addEventListener("click", async () => {
+        try {
+          await navigator.share(shareData);
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            showMessage("Sharing is not available right now.", "error");
+          }
+        }
+      });
+      shareButtonGroup.appendChild(nativeShareButton);
+    }
+
+    const whatsappLink = document.createElement("a");
+    whatsappLink.className = "share-action-link whatsapp-share";
+    whatsappLink.href = `https://wa.me/?text=${encodeURIComponent(
+      `${shareData.text} ${shareData.url}`
+    )}`;
+    whatsappLink.target = "_blank";
+    whatsappLink.rel = "noopener noreferrer";
+    whatsappLink.textContent = "WhatsApp";
+    shareButtonGroup.appendChild(whatsappLink);
+
+    const copyLinkButton = document.createElement("button");
+    copyLinkButton.type = "button";
+    copyLinkButton.className = "share-action-button copy-share";
+    copyLinkButton.textContent = "Copy Link";
+    copyLinkButton.addEventListener("click", async () => {
+      try {
+        await copyTextToClipboard(shareData.url);
+        showMessage(`${name} link copied.`, "success");
+      } catch (error) {
+        console.error("Error copying activity link:", error);
+        showMessage("Couldn't copy the activity link. Please try again.", "error");
+      }
+    });
+    shareButtonGroup.appendChild(copyLinkButton);
+
+    shareActions.appendChild(shareButtonGroup);
+    return shareActions;
+  }
+
   // Function to determine activity type (this would ideally come from backend)
   function getActivityType(activityName, description) {
     const name = activityName.toLowerCase();
@@ -476,6 +572,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
     activityCard.className = "activity-card";
+    activityCard.id = getActivityShareId(name);
 
     // Calculate spots and capacity
     const totalSpots = details.max_participants;
@@ -576,6 +673,9 @@ document.addEventListener("DOMContentLoaded", () => {
     deleteButtons.forEach((button) => {
       button.addEventListener("click", handleUnregister);
     });
+
+    const activityActions = activityCard.querySelector(".activity-card-actions");
+    activityCard.insertBefore(createShareActions(name, details), activityActions);
 
     // Add click handler for register button (only when authenticated)
     if (currentUser) {
