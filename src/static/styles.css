@@ -218,9 +218,12 @@ section h3 {
 
 .activity-card-actions {
   margin-top: auto;
+  margin-bottom: 10px;
   padding-top: 10px;
   display: flex;
   justify-content: center;
+  align-items: stretch;
+  flex-direction: column;
 }
 
 /* Activity Tag */
@@ -300,11 +303,66 @@ section h3 {
   align-items: center;
 }
 
+.share-actions {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+}
+
+.share-label {
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.share-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.share-action-button,
+.share-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background-color: var(--background);
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.share-action-button:hover,
+.share-action-link:hover {
+  background-color: var(--primary-light);
+  border-color: var(--primary-light);
+  color: white;
+}
+
+.whatsapp-share {
+  background-color: var(--success-light);
+  color: var(--success);
+  border-color: #c8e6c9;
+}
+
+.copy-share {
+  background-color: #eef2ff;
+}
+
 /* Buttons */
 .register-button {
   background: linear-gradient(145deg, var(--secondary), var(--secondary-dark));
   color: var(--secondary-text);
-  margin-top: 10px;
   padding: 6px 12px;
   width: 100%;
   font-weight: bold;
@@ -469,6 +527,22 @@ input:focus-visible {
 
 .modal.show .modal-content {
   transform: translateY(0);
+}
+
+.share-link-input {
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.share-link-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
 }
 
 .close-modal,

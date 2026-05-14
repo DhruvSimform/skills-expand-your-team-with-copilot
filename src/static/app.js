@@ -28,7 +28,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
+
+  const schoolName =
+    document.querySelector("header h1")?.textContent?.trim() ||
+    document.title ||
+    "School";
+
   const themeStorageKey = "preferredTheme";
+
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -376,12 +383,161 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.schedule;
   }
 
+
+  // Convert activity names into stable DOM ids for shareable card links.
+  function createActivityElementId(activityName) {
+    return `activity-${activityName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")}`;
+  }
+
+  function getActivityShareData(name, details) {
+    const shareUrl = new URL(window.location.href);
+    shareUrl.hash = createActivityElementId(name);
+
+    return {
+      title: `${name} at ${schoolName}`,
+      text: `Check out ${name} at ${schoolName}! ${details.description} Meets ${formatSchedule(
+        details
+      )}.`,
+      url: shareUrl.toString(),
+    };
+  }
+
+  function showShareLinkDialog(url) {
+    let shareLinkModal = document.getElementById("share-link-modal");
+    if (!shareLinkModal) {
+      shareLinkModal = document.createElement("div");
+      shareLinkModal.id = "share-link-modal";
+      shareLinkModal.className = "modal hidden";
+      shareLinkModal.innerHTML = `
+        <div class="modal-content">
+          <h3>Copy Activity Link</h3>
+          <p>Select and copy the link below to share this activity.</p>
+          <input
+            id="share-link-input"
+            class="share-link-input"
+            type="text"
+            readonly
+          />
+          <div class="share-link-modal-actions">
+            <button id="close-share-link-button" type="button">Close</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(shareLinkModal);
+    }
+
+    const shareLinkInput = document.getElementById("share-link-input");
+    shareLinkInput.value = url;
+
+    const closeShareLinkModal = () => {
+      shareLinkModal.classList.remove("show");
+      setTimeout(() => {
+        shareLinkModal.classList.add("hidden");
+      }, 300);
+    };
+
+    const closeShareLinkButton = document.getElementById(
+      "close-share-link-button"
+    );
+    closeShareLinkButton.onclick = closeShareLinkModal;
+    shareLinkModal.onclick = (event) => {
+      if (event.target === shareLinkModal) {
+        closeShareLinkModal();
+      }
+    };
+
+    shareLinkModal.classList.remove("hidden");
+    setTimeout(() => {
+      shareLinkModal.classList.add("show");
+      shareLinkInput.focus();
+      shareLinkInput.select();
+    }, 10);
+  }
+
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    showShareLinkDialog(text);
+    return false;
+  }
+
+  function createShareActions(name, details) {
+    const shareData = getActivityShareData(name, details);
+    const shareActions = document.createElement("div");
+    shareActions.className = "share-actions";
+
+    const shareLabel = document.createElement("p");
+    shareLabel.className = "share-label";
+    shareLabel.textContent = "Share with friends:";
+    shareActions.appendChild(shareLabel);
+
+    const shareButtonGroup = document.createElement("div");
+    shareButtonGroup.className = "share-button-group";
+
+    if (navigator.share) {
+      const nativeShareButton = document.createElement("button");
+      nativeShareButton.type = "button";
+      nativeShareButton.className = "share-action-button";
+      nativeShareButton.textContent = "Share";
+      nativeShareButton.addEventListener("click", async () => {
+        try {
+          await navigator.share(shareData);
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            showMessage(
+              "Unable to share this activity. Please try another sharing method.",
+              "error"
+            );
+          }
+        }
+      });
+      shareButtonGroup.appendChild(nativeShareButton);
+    }
+
+    const whatsappLink = document.createElement("a");
+    whatsappLink.className = "share-action-link whatsapp-share";
+    whatsappLink.href = `https://wa.me/?text=${encodeURIComponent(
+      `${shareData.text} ${shareData.url}`
+    )}`;
+    whatsappLink.target = "_blank";
+    whatsappLink.rel = "noopener noreferrer";
+    whatsappLink.textContent = "WhatsApp";
+    shareButtonGroup.appendChild(whatsappLink);
+
+    const copyLinkButton = document.createElement("button");
+    copyLinkButton.type = "button";
+    copyLinkButton.className = "share-action-button copy-share";
+    copyLinkButton.textContent = "Copy Link";
+    copyLinkButton.addEventListener("click", async () => {
+      try {
+        const wasCopied = await copyTextToClipboard(shareData.url);
+        const copyMessage = wasCopied
+          ? `${name} link copied.`
+          : "Copy the activity link from the dialog box.";
+        const copyMessageType = wasCopied ? "success" : "info";
+        showMessage(copyMessage, copyMessageType);
+      } catch (error) {
+        console.error("Error copying activity link:", error);
+        showMessage("Could not copy the activity link. Please try again.", "error");
+      }
+    });
+    shareButtonGroup.appendChild(copyLinkButton);
+
+    shareActions.appendChild(shareButtonGroup);
+    return shareActions;
   function getActivityDifficulty(details) {
     if (typeof details.difficulty !== "string") {
       return "";
     }
 
     return details.difficulty.toLowerCase();
+
   }
 
   // Function to determine activity type (this would ideally come from backend)
@@ -567,6 +723,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
     activityCard.className = "activity-card";
+    activityCard.id = createActivityElementId(name);
 
     // Calculate spots and capacity
     const totalSpots = details.max_participants;
@@ -677,6 +834,8 @@ document.addEventListener("DOMContentLoaded", () => {
     deleteButtons.forEach((button) => {
       button.addEventListener("click", handleUnregister);
     });
+
+    activityCard.appendChild(createShareActions(name, details));
 
     // Add click handler for register button (only when authenticated)
     if (currentUser) {
