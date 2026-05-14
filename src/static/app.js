@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     community: { label: "Community", color: "#fff3e0", textColor: "#e65100" },
     technology: { label: "Technology", color: "#e8eaf6", textColor: "#3949ab" },
   };
+  const schoolName = "Mergington High School";
 
   // State for activities and filters
   let allActivities = {};
@@ -316,12 +317,64 @@ document.addEventListener("DOMContentLoaded", () => {
     shareUrl.hash = createActivityElementId(name);
 
     return {
-      title: `${name} at Mergington High School`,
-      text: `Check out ${name} at Mergington High School! ${details.description} Meets ${formatSchedule(
+      title: `${name} at ${schoolName}`,
+      text: `Check out ${name} at ${schoolName}! ${details.description} Meets ${formatSchedule(
         details
       )}.`,
       url: shareUrl.toString(),
     };
+  }
+
+  function showShareLinkDialog(url) {
+    let shareLinkModal = document.getElementById("share-link-modal");
+    if (!shareLinkModal) {
+      shareLinkModal = document.createElement("div");
+      shareLinkModal.id = "share-link-modal";
+      shareLinkModal.className = "modal hidden";
+      shareLinkModal.innerHTML = `
+        <div class="modal-content">
+          <h3>Copy Activity Link</h3>
+          <p>Select and copy the link below to share this activity.</p>
+          <input
+            id="share-link-input"
+            class="share-link-input"
+            type="text"
+            readonly
+          />
+          <div class="share-link-modal-actions">
+            <button id="close-share-link-button" type="button">Close</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(shareLinkModal);
+    }
+
+    const shareLinkInput = document.getElementById("share-link-input");
+    shareLinkInput.value = url;
+
+    const closeShareLinkModal = () => {
+      shareLinkModal.classList.remove("show");
+      setTimeout(() => {
+        shareLinkModal.classList.add("hidden");
+      }, 300);
+    };
+
+    const closeShareLinkButton = document.getElementById(
+      "close-share-link-button"
+    );
+    closeShareLinkButton.onclick = closeShareLinkModal;
+    shareLinkModal.onclick = (event) => {
+      if (event.target === shareLinkModal) {
+        closeShareLinkModal();
+      }
+    };
+
+    shareLinkModal.classList.remove("hidden");
+    setTimeout(() => {
+      shareLinkModal.classList.add("show");
+      shareLinkInput.focus();
+      shareLinkInput.select();
+    }, 10);
   }
 
   async function copyTextToClipboard(text) {
@@ -330,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return true;
     }
 
-    window.prompt("Copy this activity link:", text);
+    showShareLinkDialog(text);
     return false;
   }
 

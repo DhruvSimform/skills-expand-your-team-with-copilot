@@ -489,6 +489,22 @@ button {
   transform: translateY(0);
 }
 
+.share-link-input {
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.share-link-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
 .close-modal,
 .close-login-modal {
   position: absolute;
