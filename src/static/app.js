@@ -80,8 +80,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initializeTheme() {
     const savedTheme = localStorage.getItem(themeStorageKey);
-    const preferredTheme = savedTheme
-      ? savedTheme
+    const hasValidSavedTheme =
+      savedTheme === "dark" || savedTheme === "light";
+
+    if (savedTheme && !hasValidSavedTheme) {
+      localStorage.removeItem(themeStorageKey);
+    }
+
+    const preferredTheme =
+      hasValidSavedTheme
+        ? savedTheme
       : window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light";
