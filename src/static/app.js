@@ -17,8 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Authentication elements
   const themeToggle = document.getElementById("theme-toggle");
-  const themeIcon = themeToggle.querySelector(".theme-icon");
-  const themeLabel = themeToggle.querySelector(".theme-label");
+  const themeIcon = themeToggle?.querySelector(".theme-icon");
+  const themeLabel = themeToggle?.querySelector(".theme-label");
   const loginButton = document.getElementById("login-button");
   const userInfo = document.getElementById("user-info");
   const displayName = document.getElementById("display-name");
@@ -59,6 +59,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function applyTheme(theme) {
     currentTheme = theme === "dark" ? "dark" : "light";
     document.body.classList.toggle("dark-mode", currentTheme === "dark");
+    if (!themeToggle || !themeIcon || !themeLabel) {
+      return;
+    }
+
     themeToggle.setAttribute(
       "aria-label",
       currentTheme === "dark"
@@ -76,12 +80,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initializeTheme() {
     const savedTheme = localStorage.getItem(themeStorageKey);
-    const preferredTheme =
-      savedTheme ||
-      (window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
+    const preferredTheme = savedTheme
+      ? savedTheme
+      : window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
-        : "light");
+        : "light";
 
     applyTheme(preferredTheme);
   }
@@ -276,7 +279,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Event listeners for authentication
-  themeToggle.addEventListener("click", toggleTheme);
+  if (themeToggle) {
+    themeToggle.addEventListener("click", toggleTheme);
+  }
   loginButton.addEventListener("click", openLoginModal);
   logoutButton.addEventListener("click", logout);
   closeLoginModal.addEventListener("click", closeLoginModalHandler);
