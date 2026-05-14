@@ -82,15 +82,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedTheme = localStorage.getItem(themeStorageKey);
     const hasValidSavedTheme =
       savedTheme === "dark" || savedTheme === "light";
+    const prefersDarkMode = window.matchMedia
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+      : false;
 
-    if (savedTheme && !hasValidSavedTheme) {
+    if (savedTheme && savedTheme !== "dark" && savedTheme !== "light") {
       localStorage.removeItem(themeStorageKey);
     }
 
     const preferredTheme =
       hasValidSavedTheme
         ? savedTheme
-      : window.matchMedia("(prefers-color-scheme: dark)").matches
+      : prefersDarkMode
         ? "dark"
         : "light";
 
