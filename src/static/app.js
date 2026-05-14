@@ -26,7 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginMessage = document.getElementById("login-message");
   const schoolName =
     document.querySelector("header h1")?.textContent?.trim() ||
-    "Mergington High School";
+    document.title ||
+    "School";
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -307,6 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.schedule;
   }
 
+  // Convert activity names into stable DOM ids for shareable card links.
   function createActivityElementId(activityName) {
     return `activity-${activityName
       .toLowerCase()
@@ -439,12 +441,11 @@ document.addEventListener("DOMContentLoaded", () => {
     copyLinkButton.addEventListener("click", async () => {
       try {
         const wasCopied = await copyTextToClipboard(shareData.url);
-        showMessage(
-          wasCopied
-            ? `${name} link copied.`
-            : "Copy the activity link from the dialog box.",
-          wasCopied ? "success" : "info"
-        );
+        const copyMessage = wasCopied
+          ? `${name} link copied.`
+          : "Copy the activity link from the dialog box.";
+        const copyMessageType = wasCopied ? "success" : "info";
+        showMessage(copyMessage, copyMessageType);
       } catch (error) {
         console.error("Error copying activity link:", error);
         showMessage("Could not copy the activity link. Please try again.", "error");

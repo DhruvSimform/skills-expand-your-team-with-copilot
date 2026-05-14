@@ -185,6 +185,7 @@ section h3 {
 
 .activity-card-actions {
   margin-top: auto;
+  margin-bottom: 10px;
   padding-top: 10px;
   display: flex;
   justify-content: center;
