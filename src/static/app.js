@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
+  const schoolName =
+    document.querySelector("header h1")?.textContent?.trim() ||
+    "Mergington High School";
 
   // Activity categories with corresponding colors
   const activityTypes = {
@@ -33,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
     community: { label: "Community", color: "#fff3e0", textColor: "#e65100" },
     technology: { label: "Technology", color: "#e8eaf6", textColor: "#3949ab" },
   };
-  const schoolName = "Mergington High School";
 
   // State for activities and filters
   let allActivities = {};
@@ -728,13 +730,7 @@ document.addEventListener("DOMContentLoaded", () => {
       button.addEventListener("click", handleUnregister);
     });
 
-    const shareActions = createShareActions(name, details);
-    const activityActions = activityCard.querySelector(".activity-card-actions");
-    if (activityActions) {
-      activityCard.insertBefore(shareActions, activityActions);
-    } else {
-      activityCard.appendChild(shareActions);
-    }
+    activityCard.appendChild(createShareActions(name, details));
 
     // Add click handler for register button (only when authenticated)
     if (currentUser) {
